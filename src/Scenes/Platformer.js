@@ -95,15 +95,13 @@ class Platformer extends Phaser.Scene {
 
         });*/
         
-        this.coin_vfx = this.add.particles(0, 0, 'kenny-particles', {
-            frame: "circle_02.png",
-            duration: 100,
+        this.coin_vfx = this.add.particles(0, 0, 'coin_particle', {
+            // frame: "coin_particle.png",
             quantity: 5,
-            scale: { start: 0, end: .03 },
-            speed: 25,
-            tint:[0xffd700],
-            lifespan: { min: 100, max: 250}
-
+            scale: { start: 1, end: 0.25 },
+            speed: { min: 25, max: 100 },
+            // angle: { min: 180, max: 360 },
+            lifespan: { min: 300, max: 400 },
         }); 
 
         this.coin_vfx.stop();
@@ -192,24 +190,12 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
-            // TODO: add particle following code here
-            /*
-            if (my.sprite.player.x > 173 && my.sprite.player.x < 258.5 && my.sprite.player.y > 395) {
-                this.water_vfx.setPosition(my.sprite.player.x - 10, my.sprite.player.y+10);
-                this.water_vfx.start();
-            }
-            else {
-                this.water_vfx.stop();
-            }
-                */
 
         } else {
-            // Set acceleration to 0 and have DRAG take over
             my.sprite.player.setAccelerationX(0);
             my.sprite.player.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
-            // TODO: have the vfx stop playing
-            // this.water_vfx.stop();
+
         }
 
         // player jump

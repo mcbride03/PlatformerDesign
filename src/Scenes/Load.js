@@ -6,7 +6,7 @@ class Load extends Phaser.Scene {
     preload() {
         this.load.setPath("./assets/");
 
-        // this.load.image('white_particle', 'white-circle.png');
+         this.load.image('coin_particle', 'coin_particle.png');
         // this.load.image('white_particle', 'https://labs.phaser.io/assets/particles/white.png');
 
 
