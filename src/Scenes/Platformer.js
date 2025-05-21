@@ -94,26 +94,25 @@ class Platformer extends Phaser.Scene {
             console.log("HIT WATER!");
 
         });*/
-
-        // TODO: create coin collect particle effect here
-        // Important: make sure it's not running
         
         this.coin_vfx = this.add.particles(0, 0, 'kenny-particles', {
-            frame: ["star_01.png", "star_02.png", "star_03.png"],
+            frame: "circle_02.png",
             duration: 100,
-            quantity: 1,
-            scale: { start: 0, end: .05 },
+            quantity: 5,
+            scale: { start: 0, end: .03 },
             speed: 25,
+            tint:[0xffd700],
             lifespan: { min: 100, max: 250}
+
         }); 
-  
+
         this.coin_vfx.stop();
 
         // Coin collision handler
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
-            this.coin_vfx.setPosition(obj2.x, obj2.y);
-            obj2.destroy(); // remove coin on overlap
-            this.coin_vfx.start();
+            this.coin_vfx.emitParticleAt(obj2.x, obj2.y);
+            obj2.destroy();
+            // this.coin_vfx.start();
         });
 
         // Spike collision handler
