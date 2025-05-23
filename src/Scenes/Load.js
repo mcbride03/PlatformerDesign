@@ -17,6 +17,7 @@ class Load extends Phaser.Scene {
         this.load.image("kenny_tilemap_packed", "tilemap_packed.png");                         // Packed tilemap
         this.load.image("kenny_tilemap_packed_industrial", "tilemap_packed_industrial.png");
         this.load.image("kenny_tilemap_packed_farm", "tilemap_packed_farm.png");
+        this.load.image("kenny_tilemap_packed_BG", "tilemap-backgrounds_packed.png");
         this.load.tilemapTiledJSON("platformer-level-1", "platformer-level-1.tmj");   // Tilemap in JSON
 
         // Load the tilemap as a spritesheet
@@ -24,6 +25,7 @@ class Load extends Phaser.Scene {
             frameWidth: 18,
             frameHeight: 18
         });
+        
         this.load.spritesheet("tilemap_sheet_industrial", "tilemap_packed_industrial.png", {
             frameWidth: 18,
             frameHeight: 18
@@ -32,6 +34,11 @@ class Load extends Phaser.Scene {
             frameWidth: 18,
             frameHeight: 18
         });
+        this.load.spritesheet("tilemap_sheet_BG", "tilemap-backgrounds_packed.png", {
+            frameWidth: 18,
+            frameHeight: 18
+        });
+        
         // Oooh, fancy. A multi atlas is a texture atlas which has the textures spread
         // across multiple png files, so as to keep their size small for use with
         // lower resource devices (like mobile phones).
@@ -70,6 +77,14 @@ class Load extends Phaser.Scene {
             frames: [
                 { frame: "tile_0001.png" }
             ],
+        });
+        this.anims.create({
+            key: 'coinAnim', // Animation key
+            frames: this.anims.generateFrameNumbers('tilemap_sheet', 
+                {start: 151, end: 152}
+            ),
+            frameRate: 5,  // Higher is faster
+            repeat: -1      // Loop the animation indefinitely
         });
 
          // ...and pass to the next Scene

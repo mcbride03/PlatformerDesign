@@ -51,7 +51,8 @@
             "scaleInEditor": 1
         }
     },
-    "last.exportedFilePath": "C:/Users/18spa/Downloads/CMPM120 VS Code/PlatformerDesign/assets",
+    "frame.defaultDuration": 300,
+    "last.exportedFilePath": "C:/Users/18spa/Downloads/CMPM120 VS Code/TileAnimation/assets",
     "last.imagePath": "C:/Users/18spa/Downloads/CMPM120 VS Code/PlatformerDesign/assets",
     "map.fixedSize": false,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
@@ -67,6 +68,7 @@
         "platformer-level-1.tmx",
         "C:/Users/18spa/Downloads/CMPM120 VS Code/PlatformImprovement/assets/platformer-level-1.tmx"
     ],
+    "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
     "tileset.tileSize": {
         "height": 18,
