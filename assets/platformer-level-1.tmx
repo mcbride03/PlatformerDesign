@@ -2125,7 +2125,6 @@
   <object id="55" name="cloud" gid="156" x="648" y="180" width="18" height="18"/>
   <object id="57" name="box1" gid="27" x="252" y="378" width="18" height="18"/>
   <object id="59" name="box" gid="7" x="324" y="108" width="18" height="18"/>
-  <object id="60" name="box" gid="7" x="342" y="108" width="18" height="18"/>
   <object id="61" name="box" gid="7" x="360" y="108" width="18" height="18"/>
   <object id="64" name="box1" gid="27" x="342" y="108" width="18" height="18"/>
   <object id="75" name="box1" gid="27" x="1242" y="342" width="18" height="18"/>

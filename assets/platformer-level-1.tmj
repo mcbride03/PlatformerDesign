@@ -1736,18 +1736,6 @@
                 {
                  "gid":7,
                  "height":18,
-                 "id":60,
-                 "name":"box",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":18,
-                 "x":342,
-                 "y":108
-                }, 
-                {
-                 "gid":7,
-                 "height":18,
                  "id":61,
                  "name":"box",
                  "rotation":0,
