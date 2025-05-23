@@ -3,6 +3,22 @@ class Platformer extends Phaser.Scene {
         super("platformerScene");
     }
 
+    /*
+        TODO:
+        -end game state
+        -checkpoint system (object)
+        -when die zoom camera on death
+        -death animation?
+        -moving platform at end?
+        -box particles
+        -run particles
+        -audio
+            -landing jump
+            -jump
+            -run
+            -break box
+            -coin
+    */
     init() {
         // variables and settings
         this.ACCELERATION = 1000;
@@ -20,6 +36,8 @@ class Platformer extends Phaser.Scene {
     }
 
     create() {
+        this.coinsCollected = 0;
+
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
@@ -54,6 +72,11 @@ class Platformer extends Phaser.Scene {
             name: "box",
             key: "tilemap_sheet",
             frame: 6
+        });        
+        this.coinBoxes = this.map.createFromObjects("Objects", {
+            name: "box1",
+            key: "tilemap_sheet",
+            frame: 26
         });
         
         this.coins = this.map.createFromObjects("Objects", {
@@ -104,12 +127,11 @@ class Platformer extends Phaser.Scene {
             });
         });
 
-
-
         // Play the same animation for every memeber of the Object coins array
         this.anims.play('coinAnim', this.coins);
 
         this.physics.world.enable(this.boxes, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.coinBoxes, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.spikes, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.cloud, Phaser.Physics.Arcade.STATIC_BODY);
@@ -117,6 +139,7 @@ class Platformer extends Phaser.Scene {
         // Create a Phaser group out of the array this.coins
         // This will be used for collision detection below.
         this.boxGroup = this.add.group(this.boxes);
+        this.coinBoxGroup = this.add.group(this.coinBoxes);
         this.coinGroup = this.add.group(this.coins);
         this.spikeGroup = this.add.group(this.spikes);
         this.spikeGroup.children.iterate(spike => {
@@ -140,36 +163,70 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
         this.coin_vfx = this.add.particles(0, 0, 'coin_particle', {
-            // frame: "coin_particle.png",
             quantity: 5,
-            scale: { start: 1, end: 0.25 },
+            scale: { start: 1, end: 0.2 },
             speed: { min: 25, max: 100 },
-            // angle: { min: 180, max: 360 },
+            angle: { min: 230, max: 310 },
             lifespan: { min: 300, max: 400 },
         }); 
-
-        this.coin_vfx.stop();
+        this.coin_vfx.stop();        
         
+        this.box_vfx = this.add.particles(0, 0, 'box_particle', {
+            quantity: 3,
+            scale: {start: .3, end: 0.1},
+            speed: { min: 25, max: 75 },
+            // angle: 115,
+            radial: true,
+            // angle: { min: 0, max: 360 },
+            rotate: { min: 0, max: 360 },
+            lifespan: { min: 150, max: 150 },
+        }); 
+        this.box_vfx.stop();
+
         this.physics.add.collider(my.sprite.player, this.boxGroup, (obj1, obj2) => {
-                // Box breaks!
-                if (obj1.y > obj2.y + 16) {
-                    obj2.destroy();
-                }
+            // Box breaks!
+            if (obj1.y > obj2.y + 16) {
+                this.box_vfx.emitParticleAt(obj2.x, obj2.y);
+                obj2.destroy();
+            }
 
         });
         
-        // platform collision handler
+        this.physics.add.collider(my.sprite.player, this.coinBoxGroup, (obj1, obj2) => {
+            // coinBox breaks and coin animation!
+            if (obj1.y > obj2.y + 16) {
+                this.box_vfx.emitParticleAt(obj2.x, obj2.y);
+                obj2.destroy();
+                const coin = this.add.sprite(obj2.x, obj2.y, 'tilemap_sheet');
+                coin.play('coinAnim');
+
+                // move it upward and destroy after
+                this.tweens.add({
+                    targets: coin,
+                    scale: 0.5,
+                    y: coin.y - 30,
+                    duration: 500,
+                    ease: 'Power1',
+                    onComplete: () => { 
+                        this.coin_vfx.emitParticleAt(coin.x, coin.y); 
+                        coin.destroy(); }
+                });
+                this.coinsCollected++;
+            }
+
+        });
+
+        
+        // moving platform collision handler (used for update())
         this.physics.add.collider(my.sprite.player, this.movingPlatforms, (player, platform) => {
-            // if (player.body.blocked.down && platform.body.touching.up) {
                 this.currentPlatform = platform;
-            // }
         });
 
         // Coin collision handler
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             this.coin_vfx.emitParticleAt(obj2.x, obj2.y);
+            this.coinsCollected++;
             obj2.destroy();
-            // this.coin_vfx.start();
         });
 
         // Spike collision handler

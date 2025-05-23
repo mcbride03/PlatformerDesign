@@ -7,6 +7,7 @@ class Load extends Phaser.Scene {
         this.load.setPath("./assets/");
 
          this.load.image('coin_particle', 'coin_particle.png');
+         this.load.image('box_particle', 'boxParticle.png');
         // this.load.image('white_particle', 'https://labs.phaser.io/assets/particles/white.png');
 
 
@@ -85,6 +86,14 @@ class Load extends Phaser.Scene {
             ),
             frameRate: 5,  // Higher is faster
             repeat: -1      // Loop the animation indefinitely
+        });
+        this.anims.create({
+            key: 'coinBoxAnim',
+            frames: this.anims.generateFrameNumbers('tilemap_sheet',
+                {start: 152, end: 151}
+            ),
+            frameRate: 7,
+            repeat: 3
         });
 
          // ...and pass to the next Scene
