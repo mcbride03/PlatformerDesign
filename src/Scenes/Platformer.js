@@ -183,15 +183,6 @@ class Platformer extends Phaser.Scene {
         }); 
         this.box_vfx.stop();
 
-        this.physics.add.collider(my.sprite.player, this.boxGroup, (obj1, obj2) => {
-            // Box breaks!
-            if (obj1.y > obj2.y + 16) {
-                this.box_vfx.emitParticleAt(obj2.x, obj2.y);
-                obj2.destroy();
-            }
-
-        });
-        
         this.physics.add.collider(my.sprite.player, this.coinBoxGroup, (obj1, obj2) => {
             // coinBox breaks and coin animation!
             if (obj1.y > obj2.y + 16) {
@@ -213,10 +204,16 @@ class Platformer extends Phaser.Scene {
                 });
                 this.coinsCollected++;
             }
-
         });
 
-        
+        this.physics.add.collider(my.sprite.player, this.boxGroup, (obj1, obj2) => {
+            // Box breaks!
+            if (obj1.y > obj2.y + 16) {
+                this.box_vfx.emitParticleAt(obj2.x, obj2.y);
+                obj2.destroy();
+            }
+        });
+                
         // moving platform collision handler (used for update())
         this.physics.add.collider(my.sprite.player, this.movingPlatforms, (player, platform) => {
                 this.currentPlatform = platform;
