@@ -4,13 +4,25 @@ class Load extends Phaser.Scene {
     }
 
     preload() {
+
+        this.load.setPath("./assets/kenney_impact-sounds/Audio");
+        this.load.audio('sfx_jump','impactPlate_medium_002.ogg');
+        this.load.audio('sfx_hitBox','impactPlank_medium_003.ogg');
+        this.load.audio('sfx_hitSpike', 'impactMining_004.ogg');
+
+        this.load.setPath('./assets/kenney_music-jingles/audio/8-Bit jingles')
+        this.load.audio('sfx_hitCoin','jingles_NES14.ogg');
+        this.load.audio('sfx_gameOver', 'jingles_NES11.ogg');
+
         this.load.setPath("./assets/");
+        this.load.image('coin_particle', 'coin_particle.png');
+        this.load.image('box_particle', 'boxParticle.png');
+        this.load.image('gameOver_background', 'gameOver.png');
 
-         this.load.image('coin_particle', 'coin_particle.png');
-         this.load.image('box_particle', 'boxParticle.png');
-        // this.load.image('white_particle', 'https://labs.phaser.io/assets/particles/white.png');
+        this.load.setPath("./assets/pixel_fonts/fonts");
+        this.load.bitmapFont('font', 'round_6x6.png', 'round_6x6.xml');
 
-
+        this.load.setPath("./assets/");
         // Load characters spritesheet
         this.load.atlas("platformer_characters", "tilemap-characters-packed.png", "tilemap-characters-packed.json");
 
@@ -86,14 +98,14 @@ class Load extends Phaser.Scene {
             ),
             frameRate: 5,  // Higher is faster
             repeat: -1      // Loop the animation indefinitely
-        });
+        });        
         this.anims.create({
-            key: 'coinBoxAnim',
-            frames: this.anims.generateFrameNumbers('tilemap_sheet',
-                {start: 152, end: 151}
+            key: 'flagAnim', // Animation key
+            frames: this.anims.generateFrameNumbers('tilemap_sheet', 
+                {start: 151, end: 152}
             ),
-            frameRate: 7,
-            repeat: 3
+            frameRate: 5,  // Higher is faster
+            repeat: -1      // Loop the animation indefinitely
         });
 
          // ...and pass to the next Scene

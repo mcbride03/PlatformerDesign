@@ -24,11 +24,14 @@
             "scaleInDock": 1
         },
         "platformer-level-1.tmx": {
-            "scale": 1,
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 8,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 672,
-                "y": 343.5
+                "x": 351,
+                "y": 117.0625
             }
         },
         "platformer-level-1.tmx#TileMap": {

@@ -3,22 +3,6 @@ class Platformer extends Phaser.Scene {
         super("platformerScene");
     }
 
-    /*
-        TODO:
-        -end game state
-        -checkpoint system (object)
-        -when die zoom camera on death
-        -death animation?
-        -moving platform at end?
-        -box particles
-        -run particles
-        -audio
-            -landing jump
-            -jump
-            -run
-            -break box
-            -coin
-    */
     init() {
         // variables and settings
         this.ACCELERATION = 1000;
@@ -37,6 +21,8 @@ class Platformer extends Phaser.Scene {
 
     create() {
         this.coinsCollected = 0;
+        this.died = 0;
+
 
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
@@ -58,21 +44,24 @@ class Platformer extends Phaser.Scene {
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
             collides: true
-        });     
+        });
         
         this.backgroundLayer.setCollisionByProperty({
             collides: true
         });
-        // this.backgroundArtLayer.setCollisionByPropertty({
-            // collides: true
-        // });
 
         // Create coins from Objects layer in tilemap
+        this.winTiles = this.map.createFromObjects("Objects", {
+            name: "win",
+            key: "tilemap_sheet_industrial",
+            frame: 18
+        });    
         this.boxes = this.map.createFromObjects("Objects", {
             name: "box",
             key: "tilemap_sheet",
             frame: 6
-        });        
+        });
+
         this.coinBoxes = this.map.createFromObjects("Objects", {
             name: "box1",
             key: "tilemap_sheet",
@@ -84,11 +73,13 @@ class Platformer extends Phaser.Scene {
             key: "tilemap_sheet",
             frame: 151
         });
+
         this.spikes = this.map.createFromObjects("Objects", {
             name: "spikes",
             key: "tilemap_sheet",
             frame: 68
         });
+        
         this.cloud = this.map.createFromObjects("Objects", {
             name: "cloud",
             key: "tilemap_sheet",
@@ -135,15 +126,16 @@ class Platformer extends Phaser.Scene {
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.spikes, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.cloud, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.winTiles, Phaser.Physics.Arcade.STATIC_BODY);
 
         // Create a Phaser group out of the array this.coins
         // This will be used for collision detection below.
+        this.winGroup = this.add.group(this.winTiles);
         this.boxGroup = this.add.group(this.boxes);
         this.coinBoxGroup = this.add.group(this.coinBoxes);
         this.coinGroup = this.add.group(this.coins);
         this.spikeGroup = this.add.group(this.spikes);
         this.spikeGroup.children.iterate(spike => {
-
             spike.body.setSize(spike.width, spike.height / 2); // Half height hitbox
             spike.body.setOffset(0, spike.height / 2);         // Move it to bottom
         });
@@ -200,9 +192,16 @@ class Platformer extends Phaser.Scene {
                     ease: 'Power1',
                     onComplete: () => { 
                         this.coin_vfx.emitParticleAt(coin.x, coin.y); 
-                        coin.destroy(); }
+                        coin.destroy(); 
+                        this.sound.play('sfx_hitCoin', {
+                        volume: 0.5
+                        });
+                        this.coinsCollected++;
+                    }
                 });
-                this.coinsCollected++;
+                this.sound.play('sfx_hitBox', {
+                    volume: 0.5
+                });
             }
         });
 
@@ -211,12 +210,18 @@ class Platformer extends Phaser.Scene {
             if (obj1.y > obj2.y + 16) {
                 this.box_vfx.emitParticleAt(obj2.x, obj2.y);
                 obj2.destroy();
+                this.sound.play('sfx_hitBox', {
+                    volume: 0.5
+                });
             }
         });
                 
         // moving platform collision handler (used for update())
         this.physics.add.collider(my.sprite.player, this.movingPlatforms, (player, platform) => {
-                this.currentPlatform = platform;
+            this.currentPlatform = platform;
+        });
+        this.physics.add.collider(my.sprite.player, this.winGroup, (player, tile) => {
+            this.gameOver('YOU WIN!');
         });
 
         // Coin collision handler
@@ -224,14 +229,15 @@ class Platformer extends Phaser.Scene {
             this.coin_vfx.emitParticleAt(obj2.x, obj2.y);
             this.coinsCollected++;
             obj2.destroy();
+            this.sound.play('sfx_hitCoin', {
+                volume: 0.5
+            });
         });
 
         // Spike collision handler
         this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) => {
-            this.gameOver();
-            // console.log("you died!");
-            // my.sprite.player.setActive(false);
-
+            this.sound.play('sfx_hitSpike');
+            this.gameOver('YOU DIED!');
         });
         
 
@@ -253,7 +259,27 @@ class Platformer extends Phaser.Scene {
                 this.physics.world.debugGraphic.clear();
             }
         });
-        // TODO: Add movement vfx here
+        this.movement_vfx = this.add.particles(0, 0, 'kenny-particles', {
+            frame: ['dirt_01.png'],
+            duration: {min: 500, max: 750},
+            quantity: 1,
+            scale: { start: 0.02, end: 0 },
+            speedY: {min: -10, max: -15},
+            lifespan: { min: 250, max: 500 },
+            angle: { min: -10, max: 10 },
+        });
+        this.movement_vfx.stop();
+
+        this.jump_vfx = this.add.particles(0, 0, 'kenny-particles', {
+            frame: ['smoke_03.png'],
+            duration: {min: 500, max: 750},
+            quantity: 1,
+            scale: { start: 0, end: 0.1 },
+            // speedY: {min: -10, max: -15},
+            lifespan: { min: 250, max: 500 },
+            // angle: { min: -10, max: 10 },
+        });
+        this.jump_vfx.stop();
         
 
         // Simple camera to follow player
@@ -265,41 +291,36 @@ class Platformer extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, 2440, this.map.heightInPixels);
         
         this.animatedTiles.init(this.map);
-        // this.animatedTiles.activateLayer(this.groundLayer);
-        // this.animatedTiles.activateLayer(this.backgroundLayer);
 
     }
 
     update() {
-        // console.log("Player", my.sprite.player.x, my.sprite.player.y);
+        const player = my.sprite.player;
 
+        // get properties of tile that player is on
         const playerTileX = Math.floor(my.sprite.player.body.x / this.map.tileWidth);
         const playerTileY = Math.floor(my.sprite.player.body.y / this.map.tileHeight);
-
         const tile = this.groundLayer.getTileAt(playerTileX, playerTileY);
 
+        // if player on water tile
         if (tile && tile.properties.water) {
-            // console.log("Player is on a water tile!");
-            // slow movement
-            // bubble effect
-            this.gameOver();
-            // my.sprite.player/*.setActive(false)*/.setVisible(false);
-            // youDied();
+            this.gameOver('YOU DIED');
             return;
         }
 
-        // player move w platform
+        // platform that the player is standing on
+        // null at all moments other than when on platform
         let standingOn = null;
 
         this.movingPlatforms.getChildren().forEach(platform => {
-            const player = my.sprite.player;
 
             // Manual check for player standing on top
             const touchingFromAbove =
                 player.body.bottom <= platform.body.top + 5 &&  // close to top
                 player.body.velocity.y >= 0 &&                  // falling or stationary
                 Phaser.Geom.Intersects.RectangleToRectangle(player.getBounds(), platform.getBounds());
-
+            
+            // update standing on platform if player is on top
             if (touchingFromAbove) {
                 standingOn = platform;
             }
@@ -309,24 +330,32 @@ class Platformer extends Phaser.Scene {
             platform.prevX = platform.x;
         });
 
+        // if standingOn exists/ if player is on moving platform
         if (standingOn) {
-            my.sprite.player.x += standingOn.deltaX || 0;
+            my.sprite.player.x += standingOn.deltaX || 0;   // add velocity of platform to player velocity
         }
 
 
-
+        // player reaching max speed
         if (my.sprite.player.body.velocity.x > this.MAX_SPEED) {
             my.sprite.player.setVelocityX(this.MAX_SPEED);
         } else if (my.sprite.player.body.velocity.x < -this.MAX_SPEED) {
             my.sprite.player.setVelocityX(-this.MAX_SPEED);
         }
 
+        const isRunning = cursors.left.isDown || cursors.right.isDown;
+        const isOnGround = player.body.blocked.down;
 
+        if (isRunning && isOnGround) {
+            // Emit at player's feet
+            this.movement_vfx.emitParticleAt(player.x, player.y + player.displayHeight / 2);
+        } else {
+            this.movement_vfx.stop();
+        }
         if(cursors.left.isDown) {
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
-            // TODO: add particle following code here
 
         } else if(cursors.right.isDown) {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
@@ -344,9 +373,15 @@ class Platformer extends Phaser.Scene {
         // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
+            // TODO: add jump particle code
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            this.sound.play('sfx_jump', {
+            volume: 0.5,
+            });
+            this.jump_vfx.emitParticleAt(player.x, player.y + player.displayHeight / 2);
+
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
@@ -354,29 +389,40 @@ class Platformer extends Phaser.Scene {
         }
     }
 
-    gameOver() {
+    gameOver(message) {
+        // Stop player movement and disable physics
+        this.died++;
+        this.physics.world.pause(); // Pause all physics activity
+        my.sprite.player.setVelocity(0);
+        my.sprite.player.body.enable = false; // Disable player's physics body
+        my.sprite.player.setActive(false);
 
-        // Show game over text
-        /*
-        const gameOverText = this.add.bitmapText(400, 250, 'font', 'GAME OVER', 50)
-            .setOrigin(0.5);
-        const restartText = this.add.bitmapText(400, 320, 'font', 'Press R to Restart', 30)
-            .setOrigin(0.5);
-        */
+        // Stop camera from following the player
+        this.cameras.main.stopFollow();
+        if (this.died < 2) {
+            this.sound.play('sfx_gameOver', {
+                volume: 0.5
+            });
+        }
+        this.time.delayedCall(500, () => {
+            // Get camera center
+            const centerX = this.cameras.main.scrollX + this.cameras.main.width / 2;
+            const centerY = this.cameras.main.scrollY + this.cameras.main.height / 2;
 
-        // Death Animation
-        
+            this.BG_GameOver = this.add.image(centerX, centerY, 'gameOver_background');
+            // Game over message
+            const gameOverText = this.add.bitmapText(centerX, centerY - 40, 'font', message, 50)
+                .setOrigin(0.5);
 
-        // Stop player movement
-        my.sprite.player.setVelocityX(0);
-        my.sprite.player.setVelocityY(0);        
-        my.sprite.player.setActive(false).setVisible(false);
-        // my.sprite.player.destroy();
+            // Restart message
+            const restartText = this.add.bitmapText(centerX, centerY + 20, 'font', 'Press R to Restart', 30)
+                .setOrigin(0.5);
+        });
 
         // Wait for R key to restart
-        //this.input.keyboard.once('keydown-R', () => {
+        this.input.keyboard.once('keydown-R', () => {
             this.scene.restart("platformerScene");
-        //});
+        });
         return;
     }
 }
