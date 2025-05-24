@@ -10,7 +10,7 @@ class Load extends Phaser.Scene {
         this.load.audio('sfx_hitBox','impactPlank_medium_003.ogg');
         this.load.audio('sfx_hitSpike', 'impactMining_004.ogg');
 
-        this.load.setPath('./assets/kenney_music-jingles/audio/8-BitJingles')
+        this.load.setPath('./assets/kenney_music-jingles/Audio/8-BitJingles')
         this.load.audio('sfx_hitCoin','jingles_NES14.ogg');
         this.load.audio('sfx_gameOver', 'jingles_NES11.ogg');
 
